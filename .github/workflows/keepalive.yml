@@ -1,0 +1,27 @@
+name: instabox-keepalive
+
+on:
+  schedule:
+    # every 10 minutes; GitHub cron can lag 10-15 min under load, which is
+    # still well inside the 30-min idle window.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: instabox-keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      INSTABOX_API_KEY: ${{ secrets.INSTABOX_API_KEY }}
+      INSTABOX_BOX: ${{ vars.INSTABOX_BOX || 'box-eecd4f' }}
+      ROTATE_BEFORE_MIN: "60"
+    steps:
+      - uses: actions/checkout@v4
+      - name: install instabox CLI
+        run: npm i -g instabox
+      - name: keepalive
+        run: bash keepalive.sh
